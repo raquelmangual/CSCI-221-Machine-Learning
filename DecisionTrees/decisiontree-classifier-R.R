@@ -58,7 +58,8 @@ confusionMatrix(predictions, testData$Survived)
 printcp(tree_model)
 plotcp(tree_model)
 
-# Prune the model with a CP value higher than the stopping point
-pruned_tree <- prune(tree_model, cp = 0.02)
+# Prune the model
+pruned_tree <- prune(tree_model, cp = 0.03) #Will this make it better?
 # Visualize the pruned model
+printcp(pruned_tree)
 rpart.plot(pruned_tree)
