@@ -1,56 +1,74 @@
-# Load libraries
-library(dplyr)
-
 # Load dataset
 data(mtcars)
 
-# Preview the data
+# View structure
 str(mtcars)
-summary(mtcars)
 
-# Always clean the data first
-# Duplicates
-# Count duplicate rows
-sum(duplicated(mtcars))
-# View duplicate rows
-mtcars[duplicated(mtcars), ]
-# Remove duplicates
-mtcars <- mtcars %>% distinct()
-# Confirm any duplicates have been removed
-sum(duplicated(mtcars))
+# Preview data
+head(mtcars)
 
-# Missing Data
-# Count missing data per column
+# Count missing values per column
 colSums(is.na(mtcars))
-# Total of missing data
-sum(is.na(mtcars))
 
-# Outliers
-# Calculate z-scores
-z_scores <- scale(mtcars)
-# Identify outliers
-outliers <- abs(z_scores) > 3
-# Count outliers per column
-colSums(outliers)
-# Remove outliers
-mtcars_clean <- mtcars[!apply(outliers, 1, any), ]
-# Confirm outliers have been removed
-z_scores_clean <- scale(mtcars_clean)
-outliers_clean <- abs(z_scores_clean) > 3
-colSums(outliers_clean)
+# Check for duplicates
+sum(duplicated(mtcars))
 
-# Start PCA
-# Step 1: Standardize data
-mtcars_scaled <- scale(mtcars_clean) #we already did this step above, but just following procedure
+# Remove duplicates (if any)
+mtcars_clean <- mtcars[!duplicated(mtcars), ]
 
-# Step 2: Apply PCA
-pca_model <- prcomp(mtcars_scaled, center = TRUE, scale. = TRUE)
+# Handle categorical variables, convert to factors
+mtcars_clean <- mtcars
+mtcars_clean$cyl  <- as.factor(mtcars_clean$cyl)
+mtcars_clean$vs   <- as.factor(mtcars_clean$vs)
+mtcars_clean$am   <- as.factor(mtcars_clean$am)
+mtcars_clean$gear <- as.factor(mtcars_clean$gear)
+mtcars_clean$carb <- as.factor(mtcars_clean$carb)
 
-# Step 3: Summary
+# Keep only numeric variables
+numeric_df <- mtcars_clean[, sapply(mtcars_clean, is.numeric)]
+
+# Check for outliers
+# Boxplot for quick visualization
+boxplot(numeric_df, main = "Boxplot of Variables")
+
+# Remove outliers using z-score
+z_scores <- scale(numeric_df)
+
+# Keep rows where all z-scores are within ±3
+numeric_df_clean <- numeric_df[apply(abs(z_scores) < 3, 1, all), ]
+
+# Scale the data
+scaled_data <- scale(numeric_df_clean)
+
+# Implement PCA
+pca_model <- prcomp(scaled_data, center = TRUE, scale. = TRUE)
+
+# View the results
 summary(pca_model)
 
-# Step 4: Scree Plot
-plot(pca_model, type = "l")
+# Scree plot
+# Base R scree plot
+plot(pca_model, type = "l", main = "Scree Plot")
 
-# Step 5: Biplot
-biplot(pca_model)
+# Visualizatio to explain variance
+explained_var <- pca_model$sdev^2
+prop_var <- explained_var / sum(explained_var)
+
+plot(prop_var, 
+     xlab = "Principal Component", 
+     ylab = "Proportion of Variance Explained", 
+     type = "b")
+
+# Loadings: How much each variable contributed to the new dataset
+pca_model$rotation
+
+# PCA scores
+pca_scores <- pca_model$x
+head(pca_scores)
+
+# Visualize the PCAs
+plot(pca_scores[,1], pca_scores[,2],
+     xlab = "PC1",
+     ylab = "PC2",
+     main = "PCA Plot",
+     pch = 19)
