@@ -50,7 +50,7 @@ summary(pca_model)
 # Base R scree plot
 plot(pca_model, type = "l", main = "Scree Plot")
 
-# Visualizatio to explain variance
+# Visualization to explain variance
 explained_var <- pca_model$sdev^2
 prop_var <- explained_var / sum(explained_var)
 
