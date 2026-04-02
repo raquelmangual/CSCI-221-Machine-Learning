@@ -1,5 +1,5 @@
 # Install package
-#install.packages("factoextra")
+install.packages("factoextra")
 
 # Load libraries
 library(dplyr)
